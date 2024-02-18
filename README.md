@@ -1,5 +1,5 @@
 # SRE Challenge
-## Installation steps/Configurations
+## Installation steps/configurations
 
 ### Tools
 Install the following tools:
@@ -23,7 +23,8 @@ $ terraform -chdir=infrastructure init
 $ terraform -chdir=infrastructure apply
 ```
 Wait until the infrastructure has been fully created. This might take up to 15 minutes.
-IMPORTANT: The provisioning of the **ebs-csi aws_eks_addon** sometimes gets stuck (!?) Just wait a few minutes and if terraform timeouts, run again:
+IMPORTANT: The provisioning of the **ebs-csi aws_eks_addon** sometimes gets stuck. 
+Just wait a few minutes and if terraform timeouts, run again:
 ```bash
 $ terraform -chdir=infrastructure apply
 ```
@@ -110,6 +111,9 @@ Note that the password is stored in a base64 encoded secret in the argo namespac
 ```bash
 $ echo $(kubectl get secrets -n argo argocd-initial-admin-secret -o jsonpath='{.data.password}') | base64 -d
 ```
+All the applications should be installed from ArgoCD Dashboard:
+
+![ArgoCD Dashboard](assets/argocd.png)
 
 ### 7. Keycloak: check app access
 Open the browser to https://keycloak.sre-challenge.com/.
