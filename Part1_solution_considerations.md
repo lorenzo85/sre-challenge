@@ -3,22 +3,23 @@
 Explanation for the chosen solution and configurations:
 
 #### AWS EKS Cluster
-The AWS EKS Cluster is hosted in a VPC on AWS. The overall architecture of the VPC and EKS cluster is shown in the picture below, with the only difference that the VPC has been [configured](https://github.com/lorenzo85/sre-challenge/blob/b6af4e40b04aa9b103928c668f8de436c1d1ebe2/infrastructure/vpc.tf#L21) with 3 AZs instead and in a different region:
+The AWS EKS Cluster is hosted in a VPC on AWS. The overall architecture of the VPC and EKS cluster is shown in the picture below, 
+with the only difference that the VPC has been [configured](https://github.com/lorenzo85/sre-challenge/blob/master/infrastructure/vpc.tf#L21) with 3 AZs instead of 2 and in a different region (eu-south-1):
 
 ![AWS Infra Setup](assets/infra-setup.png)
 
-The Private Subnets host the Kubernetes cluster and the public ones provide NAT Gateways and Internet Gateways to allow egress internet traffic from the private subnets.
+The private subnets host the Kubernetes cluster and the public ones provide NAT Gateways and Internet Gateways to allow egress internet traffic from the private subnets.
 
-An Application Load Balancer provides ingress connectivity to applications deployed on the Kubernetes cluster (via Traefik ingress controller).
+An Application Load Balancer provides ingress connectivity to applications deployed on the Kubernetes cluster (via Traefik Ingress controller).
 
-The AWS EKS cluster (configured using the Terraform [EKS module](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest)) has node groups spanning 3 Availability Zones in the **[private](https://github.com/lorenzo85/sre-challenge/blob/484b0327b0908fdc31c8a98e1df892df085f74bb/infrastructure/eks.tf#L18)** subnets within the VPC.
+The AWS EKS cluster (configured using the Terraform [EKS module](https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest)) has node groups spanning 3 Availability Zones in the **[private](https://github.com/lorenzo85/sre-challenge/blob/master/infrastructure/eks.tf#L18)** subnets within the VPC.
 
 The cluster is configured with **three** different managed node groups:
 1. **[Workload](https://github.com/lorenzo85/sre-challenge/blob/484b0327b0908fdc31c8a98e1df892df085f74bb/infrastructure/eks.tf#L28)**: used for normal workloads e.g running applications such as ArgoCD, Cert Manager, Grafana and any other application which does not require specific VMs characteristics (e.g dedicated CPU/Memory). VMs of this node group are general purpose family types such as t3.small, t3.medium, t3.large and so on. 
-2. **[Database](https://github.com/lorenzo85/sre-challenge/blob/484b0327b0908fdc31c8a98e1df892df085f74bb/infrastructure/eks.tf#L39)**: used for workloads running databases (e.g PostgreSQL). The family type of VMs running in this node group are Database, I/O and/or Memory optimized specifically to run databases workloads (in the configuration for testing purposes I've used t3.small).    
+2. **[Database](https://github.com/lorenzo85/sre-challenge/blob/484b0327b0908fdc31c8a98e1df892df085f74bb/infrastructure/eks.tf#L39)**: used for workloads running databases (e.g PostgreSQL). The family type of VMs running in this node group are Database, I/O and/or Memory optimized specifically to run databases workloads (in the configuration I used t3.small for testing purposes).    
 3. **[Large](https://github.com/lorenzo85/sre-challenge/blob/484b0327b0908fdc31c8a98e1df892df085f74bb/infrastructure/eks.tf#L69)**: used for workloads requiring high requirements in terms of CPU and Memory (e.g Retool requires nodes with at least 8x vCPU and 16 GB of memory as described [here](https://docs.retool.com/self-hosted/quickstarts/kubernetes/helm#cluster-size)) 
 
-The Database and Large node groups are [configured](https://github.com/lorenzo85/sre-challenge/blob/f89a343aebdba5053d5c90fd67132358b3edd89b/infrastructure/eks.tf#L55) to taint the nodes they create within each corresponding node pool, for example:
+The Database and Large node groups are [configured](https://github.com/lorenzo85/sre-challenge/blob/master/infrastructure/eks.tf#L55) to taint the nodes they create within each corresponding node pool, for example:
 ```bash
 taints = [
  {
