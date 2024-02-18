@@ -1,0 +1,17 @@
+argo-cd:
+  server:
+    ingress:
+      enabled: true
+      hostname: argocd.sre-challenge.com
+      # Must match charts/traefik-ingress/Chart.yaml/name, as it is the name of the ingress resource,
+      # created in Kubernetes.
+      ingressClassName: traefik-ingress
+      tls: true
+      annotations:
+        # SSL Certificate is automatically provisioned by cert-manager with the selfsigned-cluster-issuer.
+        cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+  configs:
+    params:
+      # Because we are running ArgoCD behind Traefik ingress controller, which
+      # does SSL termination we must run it 'insecure', otherwise keeps redirecting the client to HTTPs.
+      server.insecure: true

@@ -1,0 +1,79 @@
+retool:
+  # Just for demo purposes, on production scale this to at least 2.
+  replicaCount: 1
+  config:
+    licenseKey: "your-license-key"
+    encryptionKey: MxH1h0wDDQGOzPk80XQcUZQMlHKIH7/j3jT7RKZzaRyRg5bX
+    jwtSecret: EamuoUTm7ydNbDM+dUQgl+sm+ZMGIHyZArg7Td9AEAuZwy95
+
+    # We use our own managed database cluster from the database namespace.
+    postgresql:
+     host: retool-db-rw.database.svc.cluster.local
+     port: 5432
+     db: retool
+     user: app
+     storage:  1Gi
+     ssl_enabled: false
+     instances: 2
+     # Must be base64 encoded
+     password: cGFzc3dvcmQ=
+     passwordSecretName: retool-db-config
+     passwordSecretKey: password
+
+  # Select large node types (Retool requires at least 1 vm with 8vCPU and 16GB of memory).
+  nodeSelector:
+    workload-type: large
+  # Add toleration to nodes reserved for workload-type 'large'.
+  tolerations:
+    - effect: NoSchedule
+      key: workload-type
+      operator: Equal
+      value: large
+  image:
+    repository: "tryretool/backend"
+    # You need to pick a specific tag here, this chart will not make a decision for you
+    tag: "3.20.16"
+    pullPolicy: "IfNotPresent"
+  ingress:
+    enabled: true
+    ingressClassName: traefik-ingress
+    annotations:
+      # SSL Certificate is automatically provisioned by cert-manager with the selfsigned-cluster-issuer.
+      cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+    hosts:
+      - host: retool.sre-challenge.com
+        paths:
+          - path: /
+    tls:
+      - secretName: retool.sre-challenge.com
+        hosts:
+          - retool.sre-challenge.com
+    pathType: ImplementationSpecific
+  # We are using our own managed PostgreSQL cluster.
+  postgresql:
+    enabled: false
+  # I could not get Auth to work, it looks like a feature only available on Enterprise Plan:
+  #  https://docs.retool.com/sso/quickstarts/custom/oidc.
+  # However, the setup is straightforward using the following environment variables, after
+  # an OIDC client has been created on Keycloak:
+
+  #environmentVariables:
+  # - name: BASE_DOMAIN
+  #   value: retool.sre-challenge.com
+  # - name: CUSTOM_OAUTH2_SSO_CLIENT_ID
+  #   value: xxxxxxxxxxxxxxxxxxxxxxxxxxxxx-generated-from-keycloak
+  # - name: CUSTOM_OAUTH2_SSO_CLIENT_SECRET
+  #   value: xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  # - name: CUSTOM_OAUTH2_SSO_SCOPES
+  #   value: "openid email profile offline_access"
+  # - name: CUSTOM_OAUTH2_SSO_AUTH_URL
+  #   value: https://keycloak.sre-challenge.com/realms/myorgrealm/protocol/openid-connect/auth
+  # - name: CUSTOM_OAUTH2_SSO_TOKEN_URL
+  #   value: https://keycloak.sre-challenge.com/realms/myorgrealm/protocol/openid-connect/token
+  # - name: CUSTOM_OAUTH2_SSO_JWT_EMAIL_KEY
+  #   value: idToken.email
+  # - name: CUSTOM_OAUTH2_SSO_JWT_FIRST_NAME_KEY
+  #   value: idToken.given_name
+  # - name: CUSTOM_OAUTH2_SSO_JWT_LAST_NAME_KEY
+  #   value: idToken.family_name
+

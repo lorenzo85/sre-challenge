@@ -1,0 +1,31 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: retool
+  namespace: argo
+spec:
+  destination:
+    namespace: retool
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - repoURL: https://lorenzo85.github.io/sre-challenge/
+      targetRevision: 1.0.0
+      chart: retool
+      helm:
+        parameters:
+          - name: retool.config.licenseKey
+            value: "yourlicensekey"
+  syncPolicy:
+    retry:
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m0s
+      limit: 5
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

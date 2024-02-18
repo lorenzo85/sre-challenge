@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  tag: latest
+
+containerPort: 80
+targetPort: 80
+serviceType: NodePort
+maxUnavailable: 1
+maxSurge: 1
+secret: ZEdocGN5QnBjeUIzYjNKcgo=
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 2Gi
+

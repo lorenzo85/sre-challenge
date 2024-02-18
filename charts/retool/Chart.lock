@@ -1,0 +1,6 @@
+dependencies:
+- name: retool
+  repository: https://charts.retool.com
+  version: 6.0.16
+digest: sha256:5d06541ff1283ca6d27e165fc3e3fa01dde864d09e1e971e1a2b49ea9bafa2bb
+generated: "2024-02-16T18:18:11.995735+01:00"

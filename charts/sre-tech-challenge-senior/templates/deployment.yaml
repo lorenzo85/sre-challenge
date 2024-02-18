@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sre-tech-challenge-senior.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "sre-tech-challenge-senior.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "sre-tech-challenge-senior.name" . }}
+    spec:
+      containers:
+      - name: nginx
+        image: "nginx:{{ .Values.image.tag | default "latest" }}"
+        ports:
+        - containerPort: {{ .Values.containerPort }}
+        env:
+          - name: MY_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "sre-tech-challenge-senior.secretName" . }}
+                key: my-secret
+        volumeMounts:
+        - name: app-volume
+          mountPath: /var/www/html
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.containerPort }}
+          initialDelaySeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: {{ .Values.containerPort }}
+            scheme: HTTP
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            {{- with .Values.resources.limits.cpu }}
+            cpu:
+              {{- toYaml . | nindent 8 }}
+            {{- end }}
+            memory: {{ .Values.resources.limits.memory }}
+
+      serviceAccountName: {{ include "sre-tech-challenge-senior.serviceAccountName" . }}
+      volumes:
+      - name: app-volume
+        persistentVolumeClaim:
+          claimName: {{ include "sre-tech-challenge-senior.pvcName" . }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.maxUnavailable }}
+      maxSurge: {{ .Values.maxSurge }}

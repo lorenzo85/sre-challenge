@@ -1,0 +1,22 @@
+traefik:
+  ingressClass:
+    enabled: true
+    isDefaultClass: true
+    fallbackApiVersion: v1
+  ingressRoute:
+    dashboard:
+      enabled: false
+  service:
+    annotations:
+      # With this annotation we tell kubernetes to provision an AWS Application Load Balancer
+      # When creating the traefik-ingress service.
+      # Here you could also create an NLB (network load balancer) instead.
+      service.beta.kubernetes.io/aws-load-balancer-type: alb
+  additionalArguments:
+    # Forces Traefik to update the ingress definitions with the LoadBalancer Hostname once the ingress has been created.
+    # Without this parameter the ingress resource does not have the: status.loadBalancer.ingress.hostname property populated
+    # and ArgoCD cannot determine if the ingress is healthy or not. With this annotation Traefik writes
+    # the property correctly back into the ingress resource.
+    - "--providers.kubernetesingress.ingressendpoint.publishedservice=ingress/traefik-ingress"
+  globalArguments:
+    - "--api.insecure=true"

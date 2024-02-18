@@ -1,0 +1,28 @@
+# Creates a Postgres database cluster using cloud native pg.
+# The cluster has 1 master instance and instances-1 read replicas.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: keycloak-db
+  namespace: database
+spec:
+  # Make sure cluster database pods are scheduled on database workload-type nodes only using affinities.
+  affinity:
+    nodeSelector:
+      workload-type: database
+    # We also need to add tolerations, because database only nodes are tainted to prevent
+    # other pods being scheduled on it.
+    tolerations:
+      - effect: NoSchedule
+        key: workload-type
+        operator: Equal
+        value: database
+  instances: {{ .Values.database.instances }}
+  bootstrap:
+    initdb:
+      database: {{ .Values.database.name }}
+      owner: app
+      secret:
+        name: {{ include "keycloak.cluster-db-secret" . }}
+  storage:
+    size: {{ .Values.database.storage }}

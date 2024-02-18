@@ -1,0 +1,55 @@
+prometheus:
+  prometheus-node-exporter:
+    # We add to the tolerations, nodes tainted with workload-type=database or workload-type=large,
+    # Because Prometheus node exporter pods can also run on those nodes in order to collect statistics.
+    tolerations:
+      - effect: NoSchedule
+        key: workload-type
+        operator: Equal
+        value: database
+      - effect: NoSchedule
+        key: workload-type
+        operator: Equal
+        value: large
+
+grafana:
+  # Just a workaround, the client_secret should be picked up from env variables instead.
+  assertNoLeakedSecrets: false
+  ingress:
+    enabled: true
+    ingressClassName: traefik-ingress
+    annotations:
+      # SSL Certificate is automatically provisioned by cert-manager with the selfsigned-cluster-issuer.
+      cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+    path: /
+    pathType: Prefix
+    hosts:
+      - grafana.sre-challenge.com
+    tls:
+       - secretName: grafana.sre-challenge.com
+         hosts:
+          - grafana.sre-challenge.com
+  grafana.ini:
+    server:
+      domain: https://grafana.sre-challenge.com
+      root_url: https://grafana.sre-challenge.com
+    # OAuth configuration for Keycloak
+    auth.generic_oauth:
+      enabled: true
+      name: Keycloak
+      allow_sign_up: true
+      client_id: grafana
+      client_secret: L8RLSywirsZT55EgX1Re8mH1Aey7E02q
+      scopes: openid email profile offline_access roles
+      email_attribute_path: email
+      login_attribute_path: username
+      name_attribute_path: full_name
+      auth_url: https://keycloak.sre-challenge.com/realms/master/protocol/openid-connect/auth
+      signout_redirect_url: https://keycloak.sre-challenge.com/realms/master/protocol/openid-connect/logout
+
+      # Because Keycloak is installed within the cluster, can use the Kubernetes service fully qualified name.
+      token_url: http://keycloak.identity.svc.cluster.local/realms/master/protocol/openid-connect/token
+      api_url: http://keycloak.identity.svc.cluster.local/realms/master/protocol/openid-connect/userinfo
+      role_attribute_path: contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
+      allow_assign_grafana_admin: true
+
