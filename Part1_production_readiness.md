@@ -25,6 +25,7 @@ To make the deployed application stack production ready, the following steps are
 ## High Availability, Security, Scalability and Disaster Recovery
 
 ### High Availability
+
 EKS Control Plane HA:
 
 The Kubernetes control plane managed by EKS runs inside a dedicated EKS managed VPC.
@@ -50,7 +51,7 @@ For HA Traefik must be configured with replicas > 1 if  kind == Deployment or us
 
 Workloads HA: 
 
-High Availability can be achieved by making sure deployments have replicas >= 2 and correct topology spread constraints as described above.
+High Availability can be achieved by making sure workloads deployments have replicas >= 2 and correct topology spread constraints as described above.
 A [Kubernetes Admission Controller](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) can be used to effectively enforce that
 all deployments installed on the cluster meet these requirements.
 
@@ -59,20 +60,40 @@ Database HA:
 Cloud Native PG provides HA by exposing a single service endpoint which automatically failovers (and promotes a read replica to master) whenever the master database node is unavailable. 
 Database replicas are kept in sync with master using quorum-based sync replication. For this reason  would be advisable to have 1 master and at least 3 replicas. Asynchronous replication is available as well.
 
-The current EKS cluster setup does not provide HA in case of a total region failure. For HA across region failures an identical cluster
-must be setup in a different region. It could be a down scaled version of the original cluster with replicas at minimum,
+Regional HA:
+
+The current EKS cluster setup does not provide HA in case of a **regional failure**. For HA across region failures an identical cluster
+must be setup in a different region. It could be a down scaled version of the original cluster with replicas at minimum or even 0 replicas but
 ready to be bootstrapped. If the RTO (Recovery Time Objective) is short, it is important to have database continuously replicated
-into the backup cluster. Cloud Native PG supports [Replicas Cluster](https://cloudnative-pg.io/documentation/1.18/replica_cluster/) which might be running in a different region.
+into the backup cluster. Cloud Native PG supports [Replicas Cluster](https://cloudnative-pg.io/documentation/1.18/replica_cluster/) useful when the target replica runs in a different region.
+
 If the primary cluster goes down, the DNS records pointing to the Load Balancer of cluster 1 must be updated to point to cluster 2 Load Balancer.
+There are different strategies to achieve this, a couple of examples are:
+- Route53 DNS [active-passive failover](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html#dns-failover-types-active-passive): in this case it is important defining the correct endpoint to be used as a Healthcheck.
+- Lambda function updating Route53 DNS record: a lambda function triggered on an S3 event fired when a file is uploaded on specific disaster recovery bucket. 
+The lambda function would then immediately update the Route53 DNS record using AWS SDK for python for instance. 
+In this case an on-call SRE would need to manually upload the file on the S3 bucket whenever an outage is detected, or it could just be uploaded on S3 by a specific CI/CD pipeline.
 
 
 ### Security
+
 PODs security:
 
 As outlined in the production readiness section above, pod security can be increased by configuring security contexts for deployments: deny privilege escalation, make sure apps are not running as root users and set read only root file system.
 These security contexts can be enforced on the cluster by creating admission controllers checking these properties on the deployed workloads.
+
 Another security aspect to consider is having pods using only Docker images from a trusted company repository. 
 To enforce this an [ImagePolicyWebook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook) admission controller can be used.
+
+To detect runtime threats within and across containers in the cluster, [Falco](https://falco.org/) can be used. 
+It uses eBPF to intercept syscalls to detect for instance if a new process is spawned from within a container, 
+or if an unexpected connection was opened on an unexpected port by a process.
+
+To restrict containers access to the underlying system [AppArmor](https://apparmor.net/) can be used. 
+AppArmor allows to whitelist or blacklist syscalls from a container or use predefined profiles. 
+Securing pods with AppArmor is relatively simple, it just requires an annotation to be added to the pod's [metadata](https://kubernetes.io/docs/tutorials/security/apparmor/#securing-a-pod).
+This solution requires having cluster nodes with apparmor installed, therefore a custom image is required.
+
 
 External Network security:
 
@@ -121,7 +142,6 @@ Using kubectl we can check it by running:
 NAME            PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION 
 gp2 (default)   kubernetes.io/aws-ebs   Delete          WaitForFirstConsumer   false                
 ```
-
 
 ### Disaster Recovery
 

@@ -111,7 +111,7 @@ Note that the password is stored in a base64 encoded secret in the argo namespac
 ```bash
 $ echo $(kubectl get secrets -n argo argocd-initial-admin-secret -o jsonpath='{.data.password}') | base64 -d
 ```
-All the applications should be installed from ArgoCD Dashboard:
+All applications should be installed and visible from the ArgoCD dashboard:
 
 ![ArgoCD Dashboard](assets/argocd.png)
 
