@@ -19,7 +19,7 @@ variable "helm-repository-git" {
 variable "version-argocd" {
   description   = "Helm Git repository"
   type          = string
-  default       = "1.0.5"
+  default       = "1.0.0"
 }
 
 variable "version-kubernetes" {
