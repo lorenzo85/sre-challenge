@@ -1,7 +1,7 @@
 ## Helm chart fixes and improvements
 
 The [original](https://github.com/SwissBorg/sre-tech-challenge-senior) helm chart contained
-some issues, and it was not generating manifests properly using Helm.
+some issues, and it was not correctly generating manifests with Helm.
 
 The main issues were:
 * Incorrect image defined `image: nginx:latets` instead of `image: nginx:latest`
@@ -17,6 +17,5 @@ A few improvements were applied to the original chart, the improved version can 
 The major changes were about giving the possibility to override only the nginx image **tag** instead of the
 entire image and rendering "optionally" the resources.limits.cpu as it seems to be an "optional" argument.
 
-Also the chart has been improved using helper functions to define resources 
-names shared/referenced across different resources definitions.
+Also, the chart has been improved using helper functions to define resources names shared/referenced across different resources definitions.
 
