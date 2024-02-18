@@ -1,5 +1,18 @@
 # Solution and considerations
 
+Configuration files reference:
+
+- [Terraform infrastructure](https://github.com/lorenzo85/sre-challenge/tree/master/infrastructure)
+- [ArgoCD applications](https://github.com/lorenzo85/sre-challenge/tree/master/applications)
+- Helm charts:
+  - [argocd](https://github.com/lorenzo85/sre-challenge/tree/master/charts/argocd)
+  - [cert-manager](https://github.com/lorenzo85/sre-challenge/tree/master/charts/cert-manager)
+  - [cn-postgresql](https://github.com/lorenzo85/sre-challenge/tree/master/charts/cn-postgresql)
+  - [keycloak](https://github.com/lorenzo85/sre-challenge/tree/master/charts/keycloak)
+  - [retool](https://github.com/lorenzo85/sre-challenge/tree/master/charts/retool)
+  - [monitoring](https://github.com/lorenzo85/sre-challenge/tree/master/charts/monitoring)
+  - [traefik-ingress](https://github.com/lorenzo85/sre-challenge/tree/master/charts/traefik-ingress)
+
 Explanation for the chosen solution and configurations:
 
 #### AWS EKS Cluster

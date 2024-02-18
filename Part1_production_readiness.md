@@ -62,12 +62,12 @@ Database replicas are kept in sync with master using quorum-based sync replicati
 
 Regional HA:
 
-The current EKS cluster setup does not provide HA in case of a **regional failure**. For HA across region failures an identical cluster
+The current EKS cluster setup does not provide HA in case of a **regional failure**. For HA across regions a standby cluster
 must be setup in a different region. It could be a down scaled version of the original cluster with replicas at minimum or even 0 replicas but
-ready to be bootstrapped. If the RTO (Recovery Time Objective) is short, it is important to have database continuously replicated
-into the backup cluster. Cloud Native PG supports [Replicas Cluster](https://cloudnative-pg.io/documentation/1.18/replica_cluster/) useful when the target replica runs in a different region.
+ready to be bootstrapped. If the RTO (Recovery Time Objective) is short, it is important to have the database continuously replicated
+in the standby cluster. Cloud Native PG supports [Replicas Cluster](https://cloudnative-pg.io/documentation/1.18/replica_cluster/) useful when the target database replica runs in a different region.
 
-If the primary cluster goes down, the DNS records pointing to the cluster 1 load balancer must be updated to point to cluster 2 load balancer.
+If the primary EKS cluster goes down, the DNS records pointing to the load balancer must be updated to point to standby cluster load balancer.
 There are different strategies to achieve this, a couple of examples are:
 - Route53 DNS [active-passive failover](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html#dns-failover-types-active-passive): in this case it is important defining the correct endpoint to be used as a Healthcheck.
 - Lambda function updating Route53 DNS record: a lambda function triggered on an S3 event fired when a file is uploaded on specific disaster recovery bucket. 
@@ -125,7 +125,7 @@ the pod (assuming the max size hasn't been reached yet).
 
 Workloads scalability:
 
-Scalability for workloads might depend on serveral factors. If the workloads are CPU bound, then HPA could be configured to scale
+Scalability for workloads might depend on several factors. If the workloads are CPU bound, then HPA could be configured to scale
 on target CPU utilization. If workloads are Memory bound, then HPA could be configured on memory utilization. Other metrics
 can be considered as well, depending on the use case. A common approach is to scale worker pods based on the **number of messages
 pending** in a queue. If there are more messages waiting, then pods processing the messages need to be increased to accommodate the load.
@@ -158,5 +158,5 @@ The disaster recovery strategies are categorized as:
 - Warm Standby: with this approach the data is continuously replicated and a **minimum** set of workloads is running, ready to receive traffic. Compared to Pilot Light this approach reduces the RTO time as there are pods always ready to receive traffic. This approach is more expensive compared to Pilot Light. 
 - Multi-Site active/active: with this approach a full replica of the first cluster is available. This approach has the lowest RTO and RPO, however it is the most expensive.
 
-For a successful disaster recovery plan it is important to have written procedures to follow, testing the procedures with simulations and describing all the steps and people involved
+For a successful disaster recovery plan it is important to have written procedures to follow, testing the procedures with simulations, business continuity tests and describing all the steps and people involved
 in the recovery plan.
