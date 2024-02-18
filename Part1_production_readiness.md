@@ -2,8 +2,8 @@
 
 To make the deployed application stack production ready, the following steps are needed:
 
-* Terraform configuration, ArgoCD applications and the other scripts need to be adjusted to have at least 3 sets of configurations variations pointing to development, staging and production environments. This also includes creating 3 distinct branches on Git dedicated to each environment.
-* Set up CI/CD configuration (e.g GitHub workflows) to automatically build applications code, build new [Helm chart](https://github.com/lorenzo85/sre-challenge/blob/4bc072336a18b50eec24491187191819d0814964/.github/workflows/release.yml) version, update ArgoCD applications targetRevisions with the new release and push it to the cluster.
+* Terraform configuration, ArgoCD applications and the other scripts need to be adjusted to have at least 3 sets of configurations variations pointing to development, staging and production environments. This also includes creating 3 distinct branches on Git for each environment.
+* Set up CI/CD configuration (e.g. GitHub workflows) to automatically build applications code, build new [Helm chart](https://github.com/lorenzo85/sre-challenge/blob/master/.github/workflows/release.yml) version, update ArgoCD applications targetRevisions with the new release and push it to the cluster.
 * Configure critical deployments to have a minimum number of replicas set to 2 and [topology spread constraint](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/) based on the Availability Zone of the nodes (topology key: topology.kubernetes.io/zone can be used).
 * Configure Kubernetes Horizontal Pod Autoscaling to scale based on CPU or Memory, depending on the workloads (e.g CPU or Memory intensive) 
 * Configure Grafana for alerting and to detect endpoints downtime.
