@@ -8,7 +8,7 @@ To make the deployed application stack production ready, the following steps are
 * Configure Kubernetes Horizontal Pod Autoscaling to scale based on CPU or Memory, depending on the workloads (e.g CPU or Memory intensive) 
 * Configure Grafana for alerting and to detect endpoints downtime.
 * Set up tools to collect, store and analyze logs from EKS and workloads, e.g: AWS CloudWatch Logs, ELK stack or Splunk.
-* Set up workload's persistent volumes backups if there are shared persistent volumes.
+* Set up workload's persistent volumes backups if there are non-ephemeral or shared persistent volumes.
 * Set up PostgreSQL databases backups using [Barman](https://pgbarman.org/) or similar tools. Cloud Native PG can be [configured](https://cloudnative-pg.io/documentation/1.16/backup_recovery/) to back up databases using Barman.
 * Traffic between pods on different nodes should use mutual TLS. Istio can be used for this. 
 * Update Cert Manager to provision certificates from a trusted CA Authority.
@@ -29,7 +29,7 @@ To make the deployed application stack production ready, the following steps are
 EKS Control Plane HA:
 
 The Kubernetes control plane managed by EKS runs inside a dedicated EKS managed VPC.
-The EKS control plane which includes Kubernetes API server nodes and etcd cluster nodes runs in an auto-scaling group that spans three AZs as shown below:
+The EKS control plane which includes Kubernetes API server nodes and etcd cluster nodes runs in an auto-scaling group that spans two or more AZs as shown below:
 ![EKS Cluster Control Plane](assets/eks-data-plane-connectivity.jpeg)
 Please note that this part of the infrastructure it is automatically created and managed by AWS whenever
 an EKS cluster is created. This also explains why if we run `kubectl get pods -n kube-system` we only see the **kube-proxy** pods and not the **api-server** or **etcd** pods in the namespace.
@@ -38,7 +38,7 @@ The **kubelet** runs as a daemon on each node, can be checked running `systemctl
 
 Traefik Ingress HA:
 
-High Availability is guaranteed by the provisioned AWS ALB when the Traefik ingress controller creates the LoadBalancer type Traefik service. 
+High Availability is guaranteed by the provisioned AWS ALB when the Traefik ingress controller creates its LoadBalancer service resource. 
 We can test it by running dig:
 ```bash
 $ dig +short a376b0b86319f4ccf935f1e2657e2b2f-634468632.eu-south-1.elb.amazonaws.com
@@ -67,11 +67,11 @@ must be setup in a different region. It could be a down scaled version of the or
 ready to be bootstrapped. If the RTO (Recovery Time Objective) is short, it is important to have database continuously replicated
 into the backup cluster. Cloud Native PG supports [Replicas Cluster](https://cloudnative-pg.io/documentation/1.18/replica_cluster/) useful when the target replica runs in a different region.
 
-If the primary cluster goes down, the DNS records pointing to the Load Balancer of cluster 1 must be updated to point to cluster 2 Load Balancer.
+If the primary cluster goes down, the DNS records pointing to the cluster 1 load balancer must be updated to point to cluster 2 load balancer.
 There are different strategies to achieve this, a couple of examples are:
 - Route53 DNS [active-passive failover](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-types.html#dns-failover-types-active-passive): in this case it is important defining the correct endpoint to be used as a Healthcheck.
 - Lambda function updating Route53 DNS record: a lambda function triggered on an S3 event fired when a file is uploaded on specific disaster recovery bucket. 
-The lambda function would then immediately update the Route53 DNS record using AWS SDK for python for instance. 
+The lambda function would then immediately update the Route53 DNS record using for instance AWS Python SDK. 
 In this case an on-call SRE would need to manually upload the file on the S3 bucket whenever an outage is detected, or it could just be uploaded on S3 by a specific CI/CD pipeline.
 
 
@@ -80,12 +80,12 @@ In this case an on-call SRE would need to manually upload the file on the S3 buc
 PODs security:
 
 As outlined in the production readiness section above, pod security can be increased by configuring security contexts for deployments: deny privilege escalation, make sure apps are not running as root users and set read only root file system.
-These security contexts can be enforced on the cluster by creating admission controllers checking these properties on the deployed workloads.
+These security contexts can be enforced on the cluster by creating specific admission controllers checking these properties when deployments are installed on the cluster.
 
-Another security aspect to consider is having pods using only Docker images from a trusted company repository. 
+Another security aspect to consider is having pods using only Docker images from a trusted repository (e.g. company Artifactory repository). 
 To enforce this an [ImagePolicyWebook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook) admission controller can be used.
 
-To detect runtime threats within and across containers in the cluster, [Falco](https://falco.org/) can be used. 
+To protect against runtime threats within and across containers in the cluster, [Falco](https://falco.org/) can be used. 
 It uses eBPF to intercept syscalls to detect for instance if a new process is spawned from within a container, 
 or if an unexpected connection was opened on an unexpected port by a process.
 
@@ -105,12 +105,14 @@ This could be done at the firewall level (better) but also from Traefik ingress 
 
 Internal Network security:
 
-Internal network security strategies include: defining Kubernetes network policies to restrict access from/to services and databases as discussed in the production readiness section above, 
-but also by encrypting traffic using Mutual TLS between pods communications. 
-Istio provides this [feature](https://istio.io/latest/docs/concepts/security/#mutual-tls-authentication) out of the box.
+Internal network security strategies include defining Kubernetes network policies to restrict access from/to services and databases as discussed in the production readiness section above, 
+but also encrypting traffic using Mutual TLS for pods to pods communications. Istio provides this [feature](https://istio.io/latest/docs/concepts/security/#mutual-tls-authentication) out of the box.
+
 Another aspect to consider is using an [Egress Gateway](https://istio.io/latest/blog/2019/egress-traffic-control-in-istio-part-1/) to secure traffic 
 leaving the cluster. This is particularly useful when workloads access external services.
-If there are workloads using buckets or other cloud resources such as s3 buckets, it would be a good practice to configure [VPC or Gatway endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html),
+
+
+If there are workloads using buckets or other cloud resources such as s3 buckets, it would be a good practice to configure [VPC or Gateway endpoints](https://docs.aws.amazon.com/vpc/latest/privatelink/vpc-endpoints-s3.html),
 so that traffic to these services does not leave AWS network (this also allows to save costs in transferring data from s3).
 
 ### Scalability
@@ -142,6 +144,7 @@ Using kubectl we can check it by running:
 NAME            PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION 
 gp2 (default)   kubernetes.io/aws-ebs   Delete          WaitForFirstConsumer   false                
 ```
+In this case for gp2 ALLOWVOLUMEEXPANSION is false.
 
 ### Disaster Recovery
 
@@ -155,5 +158,5 @@ The disaster recovery strategies are categorized as:
 - Warm Standby: with this approach the data is continuously replicated and a **minimum** set of workloads is running, ready to receive traffic. Compared to Pilot Light this approach reduces the RTO time as there are pods always ready to receive traffic. This approach is more expensive compared to Pilot Light. 
 - Multi-Site active/active: with this approach a full replica of the first cluster is available. This approach has the lowest RTO and RPO, however it is the most expensive.
 
-For a successful disaster recovery plan it is important to have a procedure to follow, describing all the steps and people involved
-in the disaster recovery procedures.
+For a successful disaster recovery plan it is important to have written procedures to follow, testing the procedures with simulations and describing all the steps and people involved
+in the recovery plan.
