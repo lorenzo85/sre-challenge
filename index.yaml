@@ -1,0 +1,121 @@
+apiVersion: v1
+entries:
+  argocd:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-18T10:53:11.014950357Z"
+    dependencies:
+    - name: argo-cd
+      repository: https://argoproj.github.io/argo-helm
+      version: 6.0.14
+    description: SRE Challenge ArgoCD Helm Chart
+    digest: 58d0a1c945144d812c10199128898060a1e8e0b48e93dd98aecb72cf1f55649e
+    name: argocd
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/argocd-1.0.0/argocd-1.0.0.tgz
+    version: 1.0.0
+  cert-manager:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-18T10:53:11.178106606Z"
+    dependencies:
+    - name: cert-manager
+      repository: https://charts.jetstack.io
+      version: 1.14.2
+    description: SRE Challenge Cert Manager Helm Chart
+    digest: ca83002df408101f83fd5eb4f54589600ceede7602404bd7843245d0225a152d
+    name: cert-manager
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/cert-manager-1.0.0/cert-manager-1.0.0.tgz
+    version: 1.0.0
+  cn-postgresql:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-18T10:53:11.356929437Z"
+    dependencies:
+    - name: cloudnative-pg
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.20.1
+    description: SRE Challenge Cloud Native PostgreSQL Helm Chart
+    digest: 13bae92fecace7e08bfa9a3e4dcd43513b83a506b13b8ee1955d6d701d74dcb7
+    name: cn-postgresql
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/cn-postgresql-1.0.0/cn-postgresql-1.0.0.tgz
+    version: 1.0.0
+  keycloak:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-18T10:53:11.55787073Z"
+    dependencies:
+    - name: keycloak
+      repository: https://charts.bitnami.com/bitnami
+      version: 18.3.4
+    description: SRE Challenge Keycloak Helm Chart
+    digest: ecae817b26859ecb23cb6421b618fdd9a7c8dcfb5051b22fbdfd1cdf55a70a18
+    name: keycloak
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/keycloak-1.0.0/keycloak-1.0.0.tgz
+    version: 1.0.0
+  monitoring:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-18T10:53:11.77622228Z"
+    dependencies:
+    - name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 25.12.0
+    - name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 7.3.0
+    description: SRE Challenge Monitoring chart
+    digest: 47f907d7419948cff2d204bf9ee2e148fc9045f58f6d5f0248037c0302e6ab8e
+    name: monitoring
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/monitoring-1.0.0/monitoring-1.0.0.tgz
+    version: 1.0.0
+  retool:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-18T10:53:11.984452037Z"
+    dependencies:
+    - name: retool
+      repository: https://charts.retool.com
+      version: 6.0.16
+    description: SRE Challenge Retool Helm Chart
+    digest: 24082731ff5c0ac35fe859fc3babeca0785fd7783bb86a3345db8027014bd06d
+    name: retool
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/retool-1.0.0/retool-1.0.0.tgz
+    version: 1.0.0
+  sre-challenge:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2024-02-18T10:53:12.158265087Z"
+    description: A simple application with some errors
+    digest: 3a8620559e92a4bf007c931b350dc670dd297d1955b5d1c0571cef66f95f1ebc
+    name: sre-challenge
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/sre-challenge-1.0.9/sre-challenge-1.0.9.tgz
+    version: 1.0.9
+  traefik-ingress:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-02-18T10:53:12.322020983Z"
+    dependencies:
+    - name: traefik
+      repository: https://helm.traefik.io/traefik
+      version: 26.0.0
+    description: SRE Challenge Traefik Helm Chart
+    digest: 9c2ac9f0d0a417b97ba0ac1023407096b35d73753196043e56b46f7ba11b7994
+    name: traefik-ingress
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/traefik-ingress-1.0.0/traefik-ingress-1.0.0.tgz
+    version: 1.0.0
+generated: "2024-02-18T10:53:12.322029429Z"
