@@ -63,6 +63,23 @@ entries:
   monitoring:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-02-27T08:49:39.919858163Z"
+    dependencies:
+    - name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 25.12.0
+    - name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 7.3.0
+    description: SRE Challenge Monitoring chart
+    digest: 895f28b2008d869946c6d64c48692ef088b8fbcc140a682084378a5fbe92f45d
+    name: monitoring
+    type: application
+    urls:
+    - https://github.com/lorenzo85/sre-challenge/releases/download/monitoring-1.0.1/monitoring-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-02-18T10:53:11.77622228Z"
     dependencies:
     - name: prometheus
@@ -118,4 +135,4 @@ entries:
     urls:
     - https://github.com/lorenzo85/sre-challenge/releases/download/traefik-ingress-1.0.0/traefik-ingress-1.0.0.tgz
     version: 1.0.0
-generated: "2024-02-18T10:53:12.322029429Z"
+generated: "2024-02-27T08:49:39.919869504Z"
