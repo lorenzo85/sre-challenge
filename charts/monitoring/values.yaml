@@ -39,7 +39,7 @@ grafana:
       name: Keycloak
       allow_sign_up: true
       client_id: grafana
-      client_secret: L8RLSywirsZT55EgX1Re8mH1Aey7E02q
+      client_secret: AqT9pIdVWBeFqckBLFpKBMHhI82YgoWQ
       scopes: openid email profile offline_access roles
       email_attribute_path: email
       login_attribute_path: username
@@ -52,4 +52,3 @@ grafana:
       api_url: http://keycloak.identity.svc.cluster.local/realms/master/protocol/openid-connect/userinfo
       role_attribute_path: contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
       allow_assign_grafana_admin: true
-
